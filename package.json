@@ -18,5 +18,8 @@
   "license": "MIT",
   "devDependencies": {
     "electron": "~1.7.8"
+  },
+  "dependencies": {
+    "node-webcam": "^0.4.3"
   }
 }
