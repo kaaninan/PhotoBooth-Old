@@ -14,8 +14,8 @@ var inProcess = false;
 
 // Kameranın Çekim Opsiyonları
 var opts = {
-    width: 1920,
-    height: 1080,
+    width: 1366,
+    height: 768,
     delay: 0,
     quality: 100,
     output: "jpeg",
@@ -24,8 +24,78 @@ var opts = {
 
 
 openCamera();
-audioCapture.play();
 readyCapture = true;
+
+
+
+function openCamera() {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({
+            video: true
+        }).then(function(stream) {
+            video.src = window.URL.createObjectURL(stream);
+            track = stream.getTracks()[0];
+        });
+    }
+}
+
+setTimeout(function(){
+	console.log("ok");
+	Webcam.capture("test.jpg");
+}, 1000);
+
+function capture(count) {
+
+    // İşlem yapılıyor true yap, tuşa çok basarsa işlem yapmasın
+    inProcess = true;
+
+
+    // Resim çek
+    Webcam.capture(count + ".jpg");
+        
+    // İşlem yapılmıyor olarak ayarla
+    inProcess = false;
+
+    if (count == 1) {
+        // Process Barı güncelle
+        $("#process1").hide();
+        $("#okey1").show();
+        interval2 = setInterval(function() {
+            blink2()
+        }, 500);
+    } else if (count == 2) {
+        // Process Barı güncelle
+        $("#process2").hide();
+        $("#okey2").show();
+        interval3 = setInterval(function() {
+            blink3()
+        }, 500);
+    }
+
+    // Kamerayı durdur
+    track.stop();
+
+
+    // Resimleri kırp
+    cropImage();
+
+
+    d = new Date();
+
+    // Viewdaki resimleri güncelle
+    $('#img1').attr('src', '1.jpg?'+d.getTime());
+    $('#img2').attr('src', '2.jpg?'+d.getTime());
+    $('#img3').attr('src', '3.jpg?'+d.getTime());
+
+    // Resim seçme ekranını aç
+    $('#process').hide();
+    $('#resim_sec').show();
+
+
+    // Keyevent için değerler
+    readyCapture = false;
+    readySelectPicture = true;
+}
 
 
 // // Klavyeden bir tuşa basıldığında
@@ -174,17 +244,6 @@ readyCapture = true;
 
 
 
-function openCamera() {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        navigator.mediaDevices.getUserMedia({
-            video: true
-        }).then(function(stream) {
-            video.src = window.URL.createObjectURL(stream);
-            track = stream.getTracks()[0];
-        });
-    }
-}
-
 // // Capture ekranındaki process bardaki yuvarlağın yanıp sönmesi
 // function blink1() {
 //     $("#sira1").toggle();
@@ -199,96 +258,7 @@ function openCamera() {
 // }
 
 
-function capture(count) {
 
-    // İşlem yapılıyor true yap, tuşa çok basarsa işlem yapmasın
-    inProcess = true;
-
-    // Process Barı güncelle
-    if (count == 1) {
-        clearInterval(interval1);
-        $("#sira1").hide();
-        $("#process1").show();
-    } else if (count == 2) {
-        clearInterval(interval2);
-        $("#sira2").hide();
-        $("#process2").show();
-    } else if (count == 3) {
-        clearInterval(interval3);
-        $("#sira3").hide();
-        $("#process3").show();
-    }
-
-    // Resim çek
-    Webcam.capture(count + ".jpg");
-
-    // Resmin çekilmesini bekle
-    setTimeout(function() {
-
-        // İşlem yapılmıyor olarak ayarla
-        inProcess = false;
-
-        if (count == 1) {
-            // Process Barı güncelle
-            $("#process1").hide();
-            $("#okey1").show();
-            interval2 = setInterval(function() {
-                blink2()
-            }, 500);
-        } else if (count == 2) {
-            // Process Barı güncelle
-            $("#process2").hide();
-            $("#okey2").show();
-            interval3 = setInterval(function() {
-                blink3()
-            }, 500);
-        }
-
-        // Eğer toplam 3 resim çekildiyse
-        else if (count == 3) {
-
-            $("#process3").hide();
-            $("#okey3").show();
-
-            // Son okey işaretinin ekranda kalması için
-            setTimeout(function() {
-
-                // Kamerayı durdur
-                track.stop();
-
-                // Process ekranını göster
-                $('#capture').hide();
-                $('#process').show();
-
-                // Resimleri kırp
-                cropImage();
-
-                // Resimler işlendikten sonra
-                setTimeout(function() {
-
-                    d = new Date();
-
-                    // Viewdaki resimleri güncelle
-                    $('#img1').attr('src', '1.jpg?'+d.getTime());
-                    $('#img2').attr('src', '2.jpg?'+d.getTime());
-                    $('#img3').attr('src', '3.jpg?'+d.getTime());
-
-                    // Resim seçme ekranını aç
-                    $('#process').hide();
-                    $('#resim_sec').show();
-
-                    // Resim seçme için bilgilendirme çal
-                    audioResimSec.play();
-
-                    // Keyevent için değerler
-                    readyCapture = false;
-                    readySelectPicture = true;
-                }, 3000);
-
-            }, 500);
-        }
-    }, 2000);
-}
 
 
 // function cropImage() {
