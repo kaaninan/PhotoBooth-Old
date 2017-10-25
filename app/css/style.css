@@ -1,4 +1,13 @@
-body {
-	background: red;
-	
+*{
+  margin: 0;
+  padding: 0;
+  font-family: 'Chivo-Bold';
+  letter-spacing: 0.1px;
+}
+
+.screen{
+  width: 768px;
+  height: 1366px;
+  overflow: hidden;
+  position: relative;
 }
