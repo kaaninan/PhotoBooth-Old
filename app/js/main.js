@@ -24,6 +24,17 @@ var opts = {
     verbose: false
 }
 
+// $(function() {
+//     $("img")
+//         .mouseover(function() { 
+//             var src = $(this).attr("src").match(/[^\.]+/) + "over.gif";
+//             $(this).attr("src", src);
+//         })
+//         .mouseout(function() {
+//             var src = $(this).attr("src").replace("over.gif", ".gif");
+//             $(this).attr("src", src);
+//         });
+// });
 
 console.log("Opened");
 openCamera();

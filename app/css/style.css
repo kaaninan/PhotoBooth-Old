@@ -6,8 +6,8 @@
 }
 
 .screen{
-  width: 768px;
-  height: 1366px;
+  width: 1366px;
+  height: 768px;
   overflow: hidden;
   position: relative;
 }

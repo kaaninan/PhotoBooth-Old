@@ -1,60 +1,57 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>PhotoBooth</title>
-
-    <link rel="stylesheet" type="text/css" href="webfont/Chivo-Black/styles.css">
-    <link rel="stylesheet" type="text/css" href="webfont/Chivo-Bold/styles.css">
-    <link rel="stylesheet" type="text/css" href="webfont/Chivo-Light/styles.css">
-    <link rel="stylesheet" type="text/css" href="webfont/ClearSans-Light/styles.css">
+    <head>
+        <meta charset="UTF-8">
+        <title>PhotoBooth</title>
+        <link rel="stylesheet" type="text/css" href="webfont/Chivo-Black/styles.css">
+        <link rel="stylesheet" type="text/css" href="webfont/Chivo-Bold/styles.css">
+        <link rel="stylesheet" type="text/css" href="webfont/Chivo-Light/styles.css">
+        <link rel="stylesheet" type="text/css" href="webfont/ClearSans-Light/styles.css">
+        
+        <link rel="stylesheet" type="text/css" href="css/style.css">
+    </head>
     
-    <link rel="stylesheet" type="text/css" href="css/style.css">
-  </head>
-  
-  <body>
-	  
-	  
-    <h1>Hello World!</h1>
-    
-    <!-- Resim Çekme Ekranı -->
-      <div id="capture" class="screen">
-          <div class="frame"></div>
-
-          <div id="video_div" class="webcam"><video id="video" autoplay></video></div>
-
-           <div class="ilerleme">
-
-             <div id="yuvarlak_bir" class="yuvarlak">
-               <div id="sira1" class="sira"></div>
-               <img id="okey1" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-               <img id="process1" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-             </div>
-
-             <div class="ok"><img src="img/arrow.png" width="100px"></div>
-
-             <div id="yuvarlak_iki" class="yuvarlak">
-               <div id="sira2" class="sira" style="display:none"></div>
-               <img id="okey2" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-               <img id="process2" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-             </div>
-
-             <div class="ok2"><img src="img/arrow.png" width="100px"></div>
-
-             <div id="yuvarlak_uc" class="yuvarlak">
-               <div id="sira3" class="sira" style="display:none"></div>
-               <img id="okey3" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-               <img id="process3" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-             </div>
-           </div>
-          <!-- <div class="video_border_left"></div>
-          <div class="video_border_right"></div> -->
-      </div>
-
-	<script src="js/jquery.min.js" charset="utf-8"></script>
-    <script>
-		require('./js/main.js')
-    </script>
-    
-  </body>
+    <body>
+        
+        <div class="screen">
+            
+            <!-- Question Screen -->
+            <div id="question">
+                <img id="question_img" width="1366" height="768" src="questions/q1.jpg">
+            </div>
+            
+            
+            <!-- Resim Çekme Ekranı -->
+            <div id="capture" class="screen" style="display: none">
+                <div class="frame"></div>
+                <div id="video_div" class="webcam"><video id="video" autoplay></video></div>
+                <div class="ilerleme">
+                    <div id="yuvarlak_bir" class="yuvarlak">
+                        <div id="sira1" class="sira"></div>
+                        <img id="okey1" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
+                        <img id="process1" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
+                    </div>
+                    <div class="ok"><img src="img/arrow.png" width="100px"></div>
+                    <div id="yuvarlak_iki" class="yuvarlak">
+                        <div id="sira2" class="sira" style="display:none"></div>
+                        <img id="okey2" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
+                        <img id="process2" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
+                    </div>
+                    <div class="ok2"><img src="img/arrow.png" width="100px"></div>
+                    <div id="yuvarlak_uc" class="yuvarlak">
+                        <div id="sira3" class="sira" style="display:none"></div>
+                        <img id="okey3" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
+                        <img id="process3" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
+                    </div>
+                </div>
+                <!-- <div class="video_border_left"></div>
+                <div class="video_border_right"></div> -->
+            </div>
+        </div>
+        <script src="js/jquery.min.js" charset="utf-8"></script>
+        <script>
+        require('./js/main.js')
+        </script>
+        
+    </body>
 </html>
