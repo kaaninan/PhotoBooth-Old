@@ -1,0 +1,22 @@
+{
+  "name": "photobooth",
+  "version": "1.0.0",
+  "description": "Electron.js Application which takes your photos and publishes on Twitter using a Raspberry Pi 3",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": "https://github.com/kaaninan/photobooth",
+  "keywords": [
+    "Electron",
+    "quick",
+    "start",
+    "tutorial",
+    "demo"
+  ],
+  "author": "GitHub",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "~1.7.8"
+  }
+}
