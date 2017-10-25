@@ -14,17 +14,17 @@
     <body>
         
         <div class="screen">
-            
+
             <!-- Question Screen -->
-            <div id="question">
-                <img id="question_img" width="1366" height="768" src="questions/q1.jpg">
+            <div id="screen_question" class="screen" style="display: none;">
+                <img id="question_img" width="1366" height="768">
             </div>
             
             
             <!-- Resim Çekme Ekranı -->
-            <div id="capture" class="screen" style="display: none">
-                <div class="frame"></div>
-                <div id="video_div" class="webcam"><video id="video" autoplay></video></div>
+            <div id="screen_takePhoto" class="screen" style="display: block">
+                <div class="frame"><img src="img/banner_full.png" width="1366" height="768"></div>
+                <div id="video_div" class="webcam"><video id="video" autoplay width="1366"></video></div>
                 <div class="ilerleme">
                     <div id="yuvarlak_bir" class="yuvarlak">
                         <div id="sira1" class="sira"></div>
@@ -48,9 +48,9 @@
                 <div class="video_border_right"></div> -->
             </div>
         </div>
-        <script src="js/jquery.min.js" charset="utf-8"></script>
+
         <script>
-        require('./js/main.js')
+            require('./js/main.js')
         </script>
         
     </body>

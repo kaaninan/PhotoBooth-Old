@@ -1,19 +1,25 @@
 var NodeWebcam = require("node-webcam");
 var fs = require("fs");
-// var easyimg = require('easyimage');
+var $ = require("jquery");
 
 
-// ---- WEBCAM ---- //
+// Webcam
 var video = document.getElementById('video');
-var track; // Kamerayı durdurmak için
+var track;
 var Webcam = NodeWebcam.create(opts);
 
 
-// Webcam.capture işlem yapıyor mu
+// Local Variables
+var loop = true;
 var inProcess = false;
+var questionCount = 12;
+var currentQuestion = 1;
 
 
-// Kameranın Çekim Opsiyonları
+// Question Answers
+var answers = [true, false, true, false];
+
+// Options for camera
 var opts = {
     width: 1280,
     height: 800,
@@ -24,25 +30,8 @@ var opts = {
     verbose: false
 }
 
-// $(function() {
-//     $("img")
-//         .mouseover(function() { 
-//             var src = $(this).attr("src").match(/[^\.]+/) + "over.gif";
-//             $(this).attr("src", src);
-//         })
-//         .mouseout(function() {
-//             var src = $(this).attr("src").replace("over.gif", ".gif");
-//             $(this).attr("src", src);
-//         });
-// });
 
-console.log("Opened");
-openCamera();
-readyCapture = true;
-
-
-
-function openCamera() {
+function openCameraView() {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({
             video: true
@@ -57,6 +46,56 @@ setTimeout(function(){
 	console.log("ok");
 	Webcam.capture("/home/pi/PhotoBooth/test.jpg", function(err,data){});
 }, 8000);
+
+
+
+openCameraView();
+
+
+// Main Loop
+while(loop){
+
+	// STEP 1
+	// Display current question
+	$("#question_img").attr("src", "questions/q"+currentQuestion+".jpg");
+
+	// STEP 2
+	// Wait any keyboard event
+	$(document).keypress(function(e) {
+
+    	// Write out key number
+	    console.log(e.keyCode);
+
+		if (e.keyCode == 100 || e.keyCode == 121) {
+			// Define which key
+			var userAnswer = null;
+			if(e.keyCode == 100){userAnswer = true}
+			else if(e.keyCode == 121){userAnswer = false}
+			console.log(userAnswer);
+
+			// Find right answer
+			if(answers[currentQuestion] == userAnswer){
+				console.log("correct");
+
+				// SCREEN 2
+				// Take a photo
+				$('#screen_question').hide();
+				$('#screen_takePhoto').show();
+
+			}else{
+				console.log("wrong");
+			}
+			
+		}else{
+			// Yanlış tuşa bastınız
+			console.log("pressed undefined key");
+		}
+	});
+
+	loop = false;
+};
+
+
 
 function capture(count) {
 

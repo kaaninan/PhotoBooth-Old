@@ -12,7 +12,20 @@
   position: relative;
 }
 
+
+
+.frame{
+	background-image: url('img/banner.png');
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+}
 .webcam{
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
 	border: 1px solid black;
 	-moz-transform: scale(-1, 1);
 	-webkit-transform: scale(-1, 1);
