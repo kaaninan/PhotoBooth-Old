@@ -8,21 +8,24 @@ var video = document.getElementById('video');
 var track; // Kamerayı durdurmak için
 var Webcam = NodeWebcam.create(opts);
 
+
 // Webcam.capture işlem yapıyor mu
 var inProcess = false;
 
 
 // Kameranın Çekim Opsiyonları
 var opts = {
-    width: 1366,
-    height: 768,
+    width: 1280,
+    height: 800,
     delay: 0,
+    device: false,
     quality: 100,
     output: "jpeg",
-    verbose: true
+    verbose: false
 }
 
 
+console.log("Opened");
 openCamera();
 readyCapture = true;
 
@@ -41,8 +44,8 @@ function openCamera() {
 
 setTimeout(function(){
 	console.log("ok");
-	Webcam.capture("test.jpg");
-}, 1000);
+	Webcam.capture("/home/pi/PhotoBooth/test.jpg", function(err,data){});
+}, 8000);
 
 function capture(count) {
 
