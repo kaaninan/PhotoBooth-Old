@@ -19,7 +19,7 @@ var userPressed = false;
 
 // Timeouts
 var timeout_answerSpinner = 2000; // Checking
-var timeout_rightAnswer = 2000; // Correct
+var timeout_rightAnswer = 3000; // Correct
 var timeout_processing = 3000; // Wait for capture
 var timeout_nextQuestion = 3000; // Wait for changing question img
 
@@ -164,14 +164,11 @@ function postTweet(imageName){
 		    	media_ids: media.media_id_string // Pass the media id string
 		    }
 		    
-		    console.log("1");
 
 			client.post('statuses/update', status, function(error, tweet, response) {
-				console.log("2");
 				if (!error) {
 					console.log(tweet);
-					$('#s2').hide();
-					$('#splash_successful').show();
+					// $('#splash_successful').show();
 					// Show successful screen for three second
 					nextQuestion();
 		      	}else{
@@ -201,9 +198,10 @@ function nextQuestion(){
 	// Wait for changing question image
 	setTimeout(function(){
 		$('#s1').hide();
+		$('#s2').hide();
 		$('#splash_wrong').hide();
 		$('#splash_correct').hide();
-		$('#splash_successful').hide();
+		// $('#splash_successful').hide();
 
 		// Show first screen
 		$('#screen_question').show();
