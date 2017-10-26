@@ -1,23 +1,246 @@
 var NodeWebcam = require("node-webcam");
 var fs = require("fs");
 var $ = require("jquery");
+var Jimp = require("jimp");
+var Twitter = require('twitter');
+var exec = require('child_process').exec;
 
 
-// Webcam
+// Tweet Content
+var tweet = "I am a tweet!";
+
+
+// Local Variables
+var questionCount = 17;
+var currentQuestion = 1;
+var waitingKey = true;
+var userAnswer = null;
+var userPressed = false;
+
+
+// Timeouts
+var timeout_answerSpinner = 2000; // Kontrol ediliyor
+var timeout_rightAnswer = 2000; // Doğru cevap
+var timeout_process = 2000; // İşleniyor
+var timeout_tweet = 2000; // Tweetleniyor
+var timeout_nextQuestion = 3000; // Sonraki soru
+
+
+// Answers
+var answers = [true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+
+
+// Webcam Settings
 var video = document.getElementById('video');
 var track;
 var Webcam = NodeWebcam.create(opts);
 
 
-// Local Variables
-var loop = true;
-var inProcess = false;
-var questionCount = 12;
-var currentQuestion = 1;
+// Twitter Settings
+var obj;
+var client;
+fs.readFile('twitter.json', 'utf8', function (err, data) {
+	// Read Twitter Api Settings
+	if (err) throw err;
+	obj = JSON.parse(data);
+	client = new Twitter({
+	  consumer_key: obj.consumer_key,
+	  consumer_secret: obj.consumer_secret,
+	  access_token_key: obj.access_token,
+	  access_token_secret: obj.access_token_secret
+	});
+});
 
 
-// Question Answers
-var answers = [true, false, true, false];
+// Create pictures folder for captured pics (if does not exist)
+exec("mkdir -p pictures");
+
+// Starts From Here
+openCameraView();
+showQuestion(currentQuestion);
+
+
+
+// STEP 1: Answer the Question
+function answerQuestion(){
+	// For enable keyboard event function
+	waitingKey = false;
+	// Show spinner overlay
+	$('#s1').show();
+	$('#s1text').html("Kontrol Ediliyor..");
+	// Wait a little bit
+	setTimeout(function(){
+		// Hide spinner
+		$('#s1').hide();
+
+		// Right answer?
+		if(answers[currentQuestion] == userAnswer){
+			console.log("Correct");
+			// Show successful screen
+			$('#splash_correct').show();
+
+			setTimeout(function(){
+				// Take a photo
+				takePhotoScreen();
+			}, timeout_rightAnswer);
+
+		}else{
+			console.log("Wrong");
+			// Sorry! Wrong answer, wait for 3 second
+			$('#splash_wrong').show();
+			// Pass next question
+			nextQuestion();
+		}
+	}, timeout_answerSpinner);
+		
+};
+
+
+// STEP 2: Take a Photo
+function takePhotoScreen(){
+	
+	// Hide question screen
+	$('#screen_question').hide();
+	
+	// Show webcam screen
+	$('#screen_takePhoto').show();
+
+	// Counter
+	counter = 5;
+	$('.counter').html(counter);
+	interval1 = setInterval(function(){
+		counter--;
+		$('.counter').html(counter);
+		if(counter == 0){
+			console.log("Capture");
+			clearInterval(interval1);
+			var fileName = "pictures/"+getDateTime();
+			// Save captured picture
+			Webcam.capture(fileName+".jpg");
+			// Show spinner overlay
+			$('#s2').show();
+			$('#s2text').html("İşleniyor..");
+			// Wait a little bit
+			setTimeout(function(){
+				// Send to image for process
+				processImage(fileName)
+			}, timeout_process);
+		}
+	}, 1000);
+}
+
+
+
+// STEP 3: Process Image
+function processImage(fileName){
+	console.log("Process");
+	// Open captures photo
+	Jimp.read(fileName+".jpg", function (err, lenna) {
+	    if (err) throw err;
+	    // Open banner image
+	    Jimp.read('app/img/banner_image.png', function (err, ronna) {
+	    	if (err) throw err;
+	    	// Mirror and composite with banner
+	    	lenna.mirror(true,false).composite(ronna, 0, 0);
+	    	// Create new file
+	    	newName = fileName+"_pro.jpg";
+	    	lenna.write(newName);
+	    	$('#s2text').html("Tweetleniyor..");
+
+	    	// Wait a little bir
+	    	setTimeout(function(){
+	    		postTweet(newName);
+	    	}, timeout_tweet);
+	    });
+	});
+}
+
+// STEP 4: Let's Tweet
+function postTweet(imageName){
+	// Load your image
+	var data = fs.readFileSync(imageName);
+
+	// Make post request on media endpoint. Pass file data as media parameter
+	client.post('media/upload', {media: data}, function(error, media, response) {
+	  	if (!error) {
+		    // If successful, a media object will be returned.
+		    console.log(media);
+
+		    // Lets tweet it
+		    var status = {
+		    	status: tweet,
+		    	media_ids: media.media_id_string // Pass the media id string
+		    }
+
+			client.post('statuses/update', status, function(error, tweet, response) {
+				if (!error) {
+					console.log(tweet);
+					$('#s2').hide();
+					$('#splash_successful').show();
+					// TODO: Show successful screen for three second
+					nextQuestion();
+		      	}
+		    });
+		}
+	});
+}
+
+
+
+// STEP 5: Next Question
+function nextQuestion(){
+	// Which question? Increase or from start
+	if(currentQuestion == questionCount){
+		currentQuestion = 1;
+	}else{
+		currentQuestion++;
+	}
+
+	// Set new image to <img>
+	showQuestion(currentQuestion);
+
+	// Wait for changing question image
+	setTimeout(function(){
+		$('#s1').hide();
+		$('#splash_wrong').hide();
+		$('#splash_correct').hide();
+
+		// Show first screen
+		$('#screen_question').show();
+		waitingKey = true;
+	}, timeout_nextQuestion);
+}
+
+
+function showQuestion(number){
+	// Change img's source
+	$("#question_img").attr("src", "questions/q"+number+".png");
+}
+
+
+
+
+// NON STEP
+
+// For Keyboard Events
+$(document).keypress(function(e) {
+	// Write key number
+    // console.log(e.keyCode);
+
+	if (e.keyCode == 100 || e.keyCode == 121) {
+		if(e.keyCode == 100){userAnswer = true}
+		else if(e.keyCode == 121){userAnswer = false}
+
+		if(waitingKey == true){
+			console.log("Next");
+			answerQuestion();
+		}else{
+			console.log("Pressed wrong time");
+		}
+	}else{
+		console.log("Pressed undefined key");
+	}
+});
 
 // Options for camera
 var opts = {
@@ -30,7 +253,7 @@ var opts = {
     verbose: false
 }
 
-
+// Open Camera View in Html
 function openCameraView() {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
         navigator.mediaDevices.getUserMedia({
@@ -42,394 +265,19 @@ function openCameraView() {
     }
 }
 
-setTimeout(function(){
-	console.log("ok");
-	Webcam.capture("/home/pi/PhotoBooth/test.jpg", function(err,data){});
-}, 8000);
-
-
-
-openCameraView();
-
-
-// Main Loop
-while(loop){
-
-	// STEP 1
-	// Display current question
-	$("#question_img").attr("src", "questions/q"+currentQuestion+".jpg");
-
-	// STEP 2
-	// Wait any keyboard event
-	$(document).keypress(function(e) {
-
-    	// Write out key number
-	    console.log(e.keyCode);
-
-		if (e.keyCode == 100 || e.keyCode == 121) {
-			// Define which key
-			var userAnswer = null;
-			if(e.keyCode == 100){userAnswer = true}
-			else if(e.keyCode == 121){userAnswer = false}
-			console.log(userAnswer);
-
-			// Find right answer
-			if(answers[currentQuestion] == userAnswer){
-				console.log("correct");
-
-				// SCREEN 2
-				// Take a photo
-				$('#screen_question').hide();
-				$('#screen_takePhoto').show();
-
-			}else{
-				console.log("wrong");
-			}
-			
-		}else{
-			// Yanlış tuşa bastınız
-			console.log("pressed undefined key");
-		}
-	});
-
-	loop = false;
-};
-
-
-
-function capture(count) {
-
-    // İşlem yapılıyor true yap, tuşa çok basarsa işlem yapmasın
-    inProcess = true;
-
-
-    // Resim çek
-    Webcam.capture(count + ".jpg");
-        
-    // İşlem yapılmıyor olarak ayarla
-    inProcess = false;
-
-    if (count == 1) {
-        // Process Barı güncelle
-        $("#process1").hide();
-        $("#okey1").show();
-        interval2 = setInterval(function() {
-            blink2()
-        }, 500);
-    } else if (count == 2) {
-        // Process Barı güncelle
-        $("#process2").hide();
-        $("#okey2").show();
-        interval3 = setInterval(function() {
-            blink3()
-        }, 500);
-    }
-
-    // Kamerayı durdur
-    track.stop();
-
-
-    // Resimleri kırp
-    cropImage();
-
-
-    d = new Date();
-
-    // Viewdaki resimleri güncelle
-    $('#img1').attr('src', '1.jpg?'+d.getTime());
-    $('#img2').attr('src', '2.jpg?'+d.getTime());
-    $('#img3').attr('src', '3.jpg?'+d.getTime());
-
-    // Resim seçme ekranını aç
-    $('#process').hide();
-    $('#resim_sec').show();
-
-
-    // Keyevent için değerler
-    readyCapture = false;
-    readySelectPicture = true;
+// Datetime for captured filename
+function getDateTime() {
+    var date = new Date();
+    var hour = date.getHours();
+    hour = (hour < 10 ? "0" : "") + hour;
+    var min  = date.getMinutes();
+    min = (min < 10 ? "0" : "") + min;
+    var sec  = date.getSeconds();
+    sec = (sec < 10 ? "0" : "") + sec;
+    var year = date.getFullYear();
+    var month = date.getMonth() + 1;
+    month = (month < 10 ? "0" : "") + month;
+    var day  = date.getDate();
+    day = (day < 10 ? "0" : "") + day;
+    return year + "_" + month + "_" + day + "_" + hour + "_" + min + "_" + sec;
 }
-
-
-// // Klavyeden bir tuşa basıldığında
-// $(document).keypress(function(e) {
-
-//     // Tuşun kodunu göster DEBUG
-//     console.log(e.keyCode);
-
-//     // Tanıtım Ekranında Para Gelince
-//     if (e.keyCode == 113 || e.keyCode == 119) {
-//         if (readyProgram == true) {
-//             readyProgram = false;
-//             // 113 -> Q -> 10 TL
-//             // 119 -> W -> 20 TL
-//             if (e.keyCode == 113) {
-//                 kac_fotograf = 10;
-//             } else if (e.keyCode == 119) {
-//                 kac_fotograf = 20;
-//             };
-
-//             readySelectCategory = true;
-
-//             // Kategori Ekranına Geç ve Sesi Oynat
-//             $('#giris').slideUp(500);
-//             $('#kategori_sec').slideDown(500);
-//             audioKategori.play();
-//         }
-//     }
-
-//     // Kategori Secme Ekranı ve Çekilen Resimleri Seçme Ekranı
-//     if (e.keyCode == 101 || e.keyCode == 114 || e.keyCode == 116) {
-
-//         // Kategori seçme
-//         if (readySelectCategory == true) {
-//             readySelectCategory = false;
-
-//             // Kategori için çalan bilgilendirmeyi durdur
-//             audioKategori.pause();
-
-//             if (e.keyCode == 101) {
-//                 kategori_secimi = "vesikalik";
-//                 $('.secenek1-bos').hide(500);
-//                 $('.secenek1').show(500);
-//                 setTimeout(function() {
-//                     $('#kategori_sec').slideUp(500);
-//                     $('#tanitim_vesikalik').slideDown(500);
-//                     audioVesikalik.play();
-//                     readyAcceptCategory = true;
-//                 }, 1000);
-//             }
-//             if (e.keyCode == 114) {
-//                 kategori_secimi = "pasaport";
-//                 $('.secenek2-bos').hide(500);
-//                 $('.secenek2').show(500);
-//                 setTimeout(function() {
-//                     $('#kategori_sec').slideUp(500);
-//                     $('#tanitim_pasaport').slideDown(500);
-//                     audioPasaport.play();
-//                     readyAcceptCategory = true;
-//                 }, 1000);
-//             }
-//             if (e.keyCode == 116) {
-//                 kategori_secimi = "sportif";
-//                 $('.secenek3-bos').hide(500);
-//                 $('.secenek3').show(500);
-//                 setTimeout(function() {
-//                     $('#kategori_sec').slideUp(500);
-//                     $('#tanitim_sportif').slideDown(500);
-//                     audioSportif.play();
-//                     readyAcceptCategory = true;
-//                 }, 1000);
-//             }
-//         }
-
-//         // Kategori uyarılarını onaylama
-//         else if (readyAcceptCategory == true) {
-//             readyAcceptCategory = false;
-//             audioVesikalik.pause();
-//             audioPasaport.pause();
-//             audioSportif.pause();
-//             $('#tanitim_vesikalik').slideUp(500);
-//             $('#tanitim_pasaport').slideUp(500);
-//             $('#tanitim_sportif').slideUp(500);
-
-//             // Capture ekranındaki process bardaki birinci yuvarlağın toggle ı
-//             interval1 = setInterval(function() {
-//                 blink1()
-//             }, 500);
-
-//             openCamera();
-
-//             $('#capture').slideDown(500);
-//             audioCapture.play();
-//             readyCapture = true;
-//         }
-
-
-//         // Çekilen resimleri seçme
-//         else if (readySelectPicture == true) {
-
-//             audioCapture.pause();
-//             audioResimSec.pause();
-//             audioYazdirma.play();
-
-//             if (e.keyCode == 101) {
-//                 $('.secenek11-bos').hide(500);
-//                 $('.secenek11').show(500);
-//                 setTimeout(function() {
-//                     print(1);
-//                     $('#resim_sec').slideUp(500);
-//                     $('#yazdirma').slideDown(500);
-//                 }, 1000);
-//             } else if (e.keyCode == 114) {
-//                 $('.secenek22-bos').hide(500);
-//                 $('.secenek22').show(500);
-//                 setTimeout(function() {
-//                     print(2);
-//                     $('#resim_sec').slideUp(500);
-//                     $('#yazdirma').slideDown(500);
-//                 }, 1000);
-//             } else if (e.keyCode == 116) {
-//                 $('.secenek33-bos').hide(500);
-//                 $('.secenek33').show(500);
-//                 setTimeout(function() {
-//                     print(3);
-//                     $('#resim_sec').slideUp(500);
-//                     $('#yazdirma').slideDown(500);
-//                 }, 1000);
-//             }
-
-//             readySelectPicture = false;
-//         }
-
-//     }
-
-//     // Resim Çekme Tuşuna Basınca
-//     if (e.keyCode == 121) {
-//         if (readyCapture == true && inProcess == false) {
-//             capture(photoCount);
-//             photoCount++;
-//         }
-//     }
-
-//     //
-// });
-
-
-
-// // Capture ekranındaki process bardaki yuvarlağın yanıp sönmesi
-// function blink1() {
-//     $("#sira1").toggle();
-// }
-
-// function blink2() {
-//     $("#sira2").toggle();
-// }
-
-// function blink3() {
-//     $("#sira3").toggle();
-// }
-
-
-
-
-
-// function cropImage() {
-//     easyimg.rescrop({
-//         src: '1.jpg',
-//         dst: './1.jpg',
-//         width: 1280,
-//         height: 720,
-//         cropwidth: 550,
-//         cropheight: 720,
-//         x: 0,
-//         y: 0
-//     }).then(
-//         function(image) {
-//             console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-//         },
-//         function(err) {
-//             console.log(err);
-//         });
-
-//     easyimg.rescrop({
-//         src: '2.jpg',
-//         dst: './2.jpg',
-//         width: 1280,
-//         height: 720,
-//         cropwidth: 550,
-//         cropheight: 720,
-//         x: 0,
-//         y: 0
-//     }).then(
-//         function(image) {
-//             console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-//         },
-//         function(err) {
-//             console.log(err);
-//         });
-
-//     easyimg.rescrop({
-//         src: '3.jpg',
-//         dst: './3.jpg',
-//         width: 1280,
-//         height: 720,
-//         cropwidth: 550,
-//         cropheight: 720,
-//         x: 0,
-//         y: 0
-//     }).then(
-//         function(image) {
-//             console.log('Resized and cropped: ' + image.width + ' x ' + image.height);
-//         },
-//         function(err) {
-//             console.log(err);
-//         });
-// }
-
-// function print(choose) {
-//     console.log(choose);
-//     console.log(kategori_secimi);
-//     console.log(kac_fotograf);
-//     // Yazdırma İşlemleri
-//     //
-//     // Sistemi sıfırla
-//     setTimeout(function() {
-
-//         $('#yazdirma').hide();
-//         $('#giris').show();
-//         resetSystem();
-
-//     }, 6000);
-// }
-
-// function resetSystem() {
-//     audioResimSec.currentTime = 0;
-//     audioYazdirma.currentTime = 0;
-//     audioCapture.currentTime = 0;
-//     audioSportif.currentTime = 0;
-//     audioPasaport.currentTime = 0;
-//     audioVesikalik.currentTime = 0;
-//     audioKategori.currentTime = 0;
-
-//     // Resim tipi ve resim seçme ekranındaki tikleri gizle
-//     console.log("Duzeltmeler yapılıyor");
-//     $('.secenek1').hide();
-//     $('.secenek2').hide();
-//     $('.secenek3').hide();
-//     $('.secenek1-bos').show();
-//     $('.secenek2-bos').show();
-//     $('.secenek3-bos').show();
-
-//     $('.secenek11').hide();
-//     $('.secenek22').hide();
-//     $('.secenek33').hide();
-//     $('.secenek11-bos').show();
-//     $('.secenek22-bos').show();
-//     $('.secenek33-bos').show();
-
-//     $("#sira1").hide();
-//     $("#sira2").hide();
-//     $("#sira3").hide();
-//     $("#okey1").hide();
-//     $("#okey2").hide();
-//     $("#okey3").hide();
-//     $("#process1").hide();
-//     $("#process2").hide();
-//     $("#process3").hide();
-
-//     kac_fotograf = 0; // Paraya göre değişir
-//     kategori_secimi = ""; // vesikalik, pasaport, sportif
-
-//     readyProgram = true;
-//     readySelectCategory = false;
-//     readyCapture = false;
-//     photoCount = 1;
-//     readySelectPicture = false;
-
-//     // Çekilmiş Resimleri Sil
-//     var list_of_files = ["1.jpg", "2.jpg", "3.jpg"]
-//     list_of_files.forEach(function(filename) {
-//         fs.unlink(filename);
-//     });
-// }

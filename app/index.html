@@ -15,37 +15,34 @@
         
         <div class="screen">
 
-            <!-- Question Screen -->
-            <div id="screen_question" class="screen" style="display: none;">
-                <img id="question_img" width="1366" height="768">
+            <!-- Soru Ekranı -->
+            <div id="screen_question" class="screen" style="display: block;">
+                <img id="question_img" width="1366" height="768" style="z-index: 1;">
+
+                <div id="s1" class="spinner">
+                    <div id="s1text" class="spinnerText"></div>
+                    <img src="img/spinner.gif" width="1366">
+                </div>
+                <div id="splash_correct" class="splash_screen"><img src="img/right_answer.png" width="1366"></div>
+                <div id="splash_wrong" class="splash_screen"><img src="img/try_again.png" width="1366"></div>
             </div>
             
             
             <!-- Resim Çekme Ekranı -->
-            <div id="screen_takePhoto" class="screen" style="display: block">
+            <div id="screen_takePhoto" class="screen" style="display: none;">
                 <div class="frame"><img src="img/banner_full.png" width="1366" height="768"></div>
                 <div id="video_div" class="webcam"><video id="video" autoplay width="1366"></video></div>
-                <div class="ilerleme">
-                    <div id="yuvarlak_bir" class="yuvarlak">
-                        <div id="sira1" class="sira"></div>
-                        <img id="okey1" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-                        <img id="process1" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-                    </div>
-                    <div class="ok"><img src="img/arrow.png" width="100px"></div>
-                    <div id="yuvarlak_iki" class="yuvarlak">
-                        <div id="sira2" class="sira" style="display:none"></div>
-                        <img id="okey2" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-                        <img id="process2" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-                    </div>
-                    <div class="ok2"><img src="img/arrow.png" width="100px"></div>
-                    <div id="yuvarlak_uc" class="yuvarlak">
-                        <div id="sira3" class="sira" style="display:none"></div>
-                        <img id="okey3" src="img/okey.png" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-                        <img id="process3" src="img/processing.gif" width="100px" style="margin-top:12px; margin-left:10px; display:none">
-                    </div>
+                <!-- Sayaç -->
+                <div class="counter">5</div>
+                    
+                <!-- Spinner -->
+                <div id="s2" class="spinner">
+                    <div id="s2text" class="spinnerText"></div>
+                    <img src="img/spinner.gif" width="1366">
                 </div>
-                <!-- <div class="video_border_left"></div>
-                <div class="video_border_right"></div> -->
+                
+                <!-- Successful -->
+                <div id="splash_successful" class="splash_screen"><img src="img/successful.png" width="1366"></div>
             </div>
         </div>
 

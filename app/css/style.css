@@ -15,7 +15,6 @@
 
 
 .frame{
-	background-image: url('img/banner.png');
 	position: absolute;
 	top: 0;
 	left: 0;
@@ -33,3 +32,49 @@
 	-ms-transform: scale(-1, 1);
 	transform: scale(-1, 1);
 }
+
+.spinner{
+	position: absolute;
+	top: -200px;
+	z-index: 2;
+	opacity: 0.95;
+	display: none;
+}
+
+.spinnerText{
+	position: absolute;
+	top: 750px;
+	width: 1366px;
+	height: 250px;
+	margin: auto;
+	background: rgba(255,255,255,0.6);
+	text-align: center;
+	z-index: 3;
+	font-size: 70px;
+}
+
+
+.splash_screen{
+	z-index: 3;
+	display: none;
+	position: absolute;
+	top: 0;
+}
+
+
+
+
+.counter{
+	position: absolute;
+	top: 70px;
+	right: 70px;
+	width: 250px;
+	height: 250px;
+	background: rgba(255,255,255,0.6);
+	line-height: 250px;
+	text-align: center;
+	z-index: 2;
+	font-size: 200px;
+	border-radius: 1000px;
+}
+
