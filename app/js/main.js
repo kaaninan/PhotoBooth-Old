@@ -77,7 +77,7 @@ function answerQuestion(){
 		$('#s1').hide();
 
 		// Right answer?
-		if(answers[currentQuestion] == userAnswer){
+		if(answers[currentQuestion-1] == userAnswer){
 			console.log("Correct");
 			// Show successful screen
 			$('#splash_correct').show();
