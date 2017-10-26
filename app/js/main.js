@@ -6,7 +6,7 @@ var screenshot = require('screenshot-desktop');
 
 
 // Tweet Content
-var tweet = "Yaparak öğreniyorum! #learningbymaking";
+var tweet = "Yaparak öğreniyorum! #learningbymaking @BAUSTEM #MFIST17";
 
 
 // Local Variables
@@ -164,17 +164,18 @@ function postTweet(imageName){
 		    	media_ids: media.media_id_string // Pass the media id string
 		    }
 		    
-
-			client.post('statuses/update', status, function(error, tweet, response) {
-				if (!error) {
-					console.log(tweet);
-					// $('#splash_successful').show();
-					// Show successful screen for three second
-					nextQuestion();
-		      	}else{
-					console.log(error);
-				}
-		    });
+			setTimeout(function(){
+				client.post('statuses/update', status, function(error, tweet, response) {
+					if (!error) {
+						console.log(tweet);
+						// $('#splash_successful').show();
+						// Show successful screen for three second
+						nextQuestion();
+					}else{
+						console.log(error);
+					}
+				});
+			},1000);
 		}else{
 			console.log(error);
 		}
