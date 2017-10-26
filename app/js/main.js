@@ -1,13 +1,12 @@
-var NodeWebcam = require("node-webcam");
 var fs = require("fs");
 var $ = require("jquery");
-var Jimp = require("jimp");
 var Twitter = require('twitter');
 var exec = require('child_process').exec;
+var screenshot = require('screenshot-desktop');
 
 
 // Tweet Content
-var tweet = "I am a tweet!";
+var tweet = "Yaparak öğreniyorum! #learningbymaking";
 
 
 // Local Variables
@@ -19,23 +18,22 @@ var userPressed = false;
 
 
 // Timeouts
-var timeout_answerSpinner = 2000; // Kontrol ediliyor
-var timeout_rightAnswer = 2000; // Doğru cevap
-var timeout_process = 2000; // İşleniyor
-var timeout_tweet = 2000; // Tweetleniyor
-var timeout_nextQuestion = 3000; // Sonraki soru
+var timeout_answerSpinner = 2000; // Checking
+var timeout_rightAnswer = 2000; // Correct
+var timeout_processing = 3000; // Wait for capture
+var timeout_nextQuestion = 3000; // Wait for changing question img
 
 
 // Answers
-var answers = [true, false, true, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+var answers = [true, true, false, true, false, true, true, true, false, true, true, true, false, true, false, true, false];
 
 
 // Webcam Settings
 var video = document.getElementById('video');
 var track;
-var Webcam = NodeWebcam.create(opts);
 
 
+	
 // Twitter Settings
 var obj;
 var client;
@@ -58,6 +56,11 @@ exec("mkdir -p pictures");
 // Starts From Here
 openCameraView();
 showQuestion(currentQuestion);
+setTimeout(function(){
+	// If does not open
+	openCameraView();
+}, 1000);
+
 
 
 
@@ -103,6 +106,7 @@ function takePhotoScreen(){
 	$('#screen_question').hide();
 	
 	// Show webcam screen
+	$('.counter').css({'display':'block'});
 	$('#screen_takePhoto').show();
 
 	// Counter
@@ -112,50 +116,38 @@ function takePhotoScreen(){
 		counter--;
 		$('.counter').html(counter);
 		if(counter == 0){
+			$('.counter').css({'display':'none'});
 			console.log("Capture");
 			clearInterval(interval1);
 			var fileName = "pictures/"+getDateTime();
-			// Save captured picture
-			Webcam.capture(fileName+".jpg");
-			// Show spinner overlay
-			$('#s2').show();
-			$('#s2text').html("İşleniyor..");
-			// Wait a little bit
+			
+			// Wait for disappear counter
 			setTimeout(function(){
-				// Send to image for process
-				processImage(fileName)
-			}, timeout_process);
+				screenshot().then(function(img){
+					fs.writeFile(fileName+".jpg", img, 'base64', function(err){
+						if(!err){
+							// Show spinner overlay
+							$('#s2').show();
+							$('#s2text').html("İşleniyor..");
+							// Wait a little bit (unnecessary)
+							setTimeout(function(){
+								$('#s2text').html("Tweetleniyor..");
+								postTweet(fileName+".jpg");
+								
+							}, timeout_processing);
+						}else{
+							console.log(err);
+						}
+					});
+				});
+			},1000);
 		}
 	}, 1000);
 }
 
 
 
-// STEP 3: Process Image
-function processImage(fileName){
-	console.log("Process");
-	// Open captures photo
-	Jimp.read(fileName+".jpg", function (err, lenna) {
-	    if (err) throw err;
-	    // Open banner image
-	    Jimp.read('app/img/banner_image.png', function (err, ronna) {
-	    	if (err) throw err;
-	    	// Mirror and composite with banner
-	    	lenna.mirror(true,false).composite(ronna, 0, 0);
-	    	// Create new file
-	    	newName = fileName+"_pro.jpg";
-	    	lenna.write(newName);
-	    	$('#s2text').html("Tweetleniyor..");
-
-	    	// Wait a little bir
-	    	setTimeout(function(){
-	    		postTweet(newName);
-	    	}, timeout_tweet);
-	    });
-	});
-}
-
-// STEP 4: Let's Tweet
+// STEP 3: Let's Tweet
 function postTweet(imageName){
 	// Load your image
 	var data = fs.readFileSync(imageName);
@@ -171,23 +163,30 @@ function postTweet(imageName){
 		    	status: tweet,
 		    	media_ids: media.media_id_string // Pass the media id string
 		    }
+		    
+		    console.log("1");
 
 			client.post('statuses/update', status, function(error, tweet, response) {
+				console.log("2");
 				if (!error) {
 					console.log(tweet);
 					$('#s2').hide();
 					$('#splash_successful').show();
-					// TODO: Show successful screen for three second
+					// Show successful screen for three second
 					nextQuestion();
-		      	}
+		      	}else{
+					console.log(error);
+				}
 		    });
+		}else{
+			console.log(error);
 		}
 	});
 }
 
 
 
-// STEP 5: Next Question
+// STEP 4: Next Question
 function nextQuestion(){
 	// Which question? Increase or from start
 	if(currentQuestion == questionCount){
@@ -204,6 +203,7 @@ function nextQuestion(){
 		$('#s1').hide();
 		$('#splash_wrong').hide();
 		$('#splash_correct').hide();
+		$('#splash_successful').hide();
 
 		// Show first screen
 		$('#screen_question').show();
@@ -242,16 +242,6 @@ $(document).keypress(function(e) {
 	}
 });
 
-// Options for camera
-var opts = {
-    width: 1280,
-    height: 800,
-    delay: 0,
-    device: false,
-    quality: 100,
-    output: "jpeg",
-    verbose: false
-}
 
 // Open Camera View in Html
 function openCameraView() {
